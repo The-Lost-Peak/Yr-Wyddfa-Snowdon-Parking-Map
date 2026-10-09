@@ -4,62 +4,183 @@
   <meta charset="utf-8" />
   <title>Parking Locations</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      width: 100%;
-      background: #000;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    html, body { margin:0; height:100%; width:100%; overflow:hidden; overscroll-behavior:none; background:#000 }
+    #map { position:absolute; inset:0 }
+
+    /* ===== MARKERS (matches The Ethels map) ===== */
+    .marker{ cursor:pointer !important }
+    .marker svg{ transform:scale(.85); transform-origin:center; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)) }
+
+    /* ===== POPUP (matches The Ethels map) ===== */
+    .mapboxgl-popup{ filter:drop-shadow(0 14px 28px rgba(0,0,0,.45)) }
+    .mapboxgl-popup-tip{ display:none !important }
+    .mapboxgl-popup-content{background:0 0!important;border:none!important;padding:0!important;box-shadow:none!important;width:auto!important;overflow:visible!important;display:block;box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif!important}
+    .park-card{background:#fff;border-radius:12px;padding:10px 16px 10px;text-align:center;min-width:120px;box-sizing:border-box}
+    .park-heading{font-weight:800;font-size:12px;color:#1e1e1e;margin:0 0 6px 0;white-space:nowrap}
+    .spec-row{display:flex;align-items:center;justify-content:center;gap:4px}
+    .icon{width:13px;height:13px;flex-shrink:0}
+    .icon-blue{color:#3899ec}
+    .popup-link{color:#3899ec;font-weight:800;font-size:11.5px;text-decoration:none;display:flex;align-items:center;gap:3px;white-space:nowrap}
+    .popup-link:hover{text-decoration:underline}
+    .popup-link,.popup-link:active,.popup-link:focus,.popup-link:focus-visible{background:0 0!important;outline:0!important;border:none!important;box-shadow:none!important}
+    .popup-link,.popup-link *{-webkit-tap-highlight-color:transparent!important;-webkit-touch-callout:none!important;-webkit-user-select:none!important}
+
+    /* ===== MAP BUTTONS (matches The Ethels map) ===== */
+    .fs-btn{position:absolute;bottom:50px;right:20px;z-index:10;width:50px;height:50px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.15s;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 1px rgba(255,255,255,.85),inset 0 -2px 6px rgba(255,255,255,.25),0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(12px) saturate(160%);backdrop-filter:blur(12px) saturate(160%)}
+    @supports((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.fs-btn{background:rgba(255,255,255,.28)}}
+    @media(hover:hover){.fs-btn:hover{background:rgba(56,153,236,.35)}}
+    .fs-btn:focus{outline:0}
+    .fs-btn:active{background:rgba(255,255,255,.45)}
+    .fs-btn svg{fill:none;stroke:#1c1c1e;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:22px;height:22px;display:block;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))}
+    #map-btn-fullscreen,#map-btn-layers,#map-btn-locate,#map-btn-reset{position:absolute;right:20px;width:50px;height:50px}
+    #map-btn-fullscreen{bottom:50px}
+    #map-btn-locate{bottom:110px}
+    #map-btn-layers{bottom:170px}
+    #map-btn-reset{bottom:230px}
+    @media (max-width:767px){
+      body:not(.fs-mode) #map-btn-fullscreen,body:not(.fs-mode) #map-btn-layers,body:not(.fs-mode) #map-btn-locate,body:not(.fs-mode) #map-btn-reset{width:38px!important;height:38px!important;right:11px!important}
+      body:not(.fs-mode) #map-btn-fullscreen{bottom:49px!important}
+      body:not(.fs-mode) #map-btn-locate{bottom:97px!important}
+      body:not(.fs-mode) #map-btn-layers{bottom:145px!important}
+      body:not(.fs-mode) #map-btn-reset{bottom:193px!important}
+      body:not(.fs-mode) #map-btn-fullscreen svg,body:not(.fs-mode) #map-btn-layers svg,body:not(.fs-mode) #map-btn-locate svg,body:not(.fs-mode) #map-btn-reset svg{width:16px!important;height:16px!important}
+      body.fs-mode #map-btn-fullscreen,body.fs-mode #map-btn-layers,body.fs-mode #map-btn-locate,body.fs-mode #map-btn-reset{width:46px!important;height:46px!important;right:16px!important}
+      body.fs-mode #map-btn-fullscreen{bottom:46px!important}
+      body.fs-mode #map-btn-locate{bottom:102px!important}
+      body.fs-mode #map-btn-layers{bottom:158px!important}
+      body.fs-mode #map-btn-reset{bottom:214px!important}
+      body.fs-mode #map-btn-fullscreen svg,body.fs-mode #map-btn-layers svg,body.fs-mode #map-btn-locate svg,body.fs-mode #map-btn-reset svg{width:20px!important;height:20px!important}
     }
-
-    #map { position: absolute; inset: 0; }
-
-    .mapboxgl-popup-content {
-      padding: 15px 15px 10px 15px;
-      border-radius: 20px;
-    }
-
-    .mapboxgl-popup-tip { display: none; }
-
-    .mapboxgl-popup-content a {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #3899EC;
-      text-decoration: none;
-      outline: none !important;
-      box-shadow: none !important;
-      border: none !important;
-    }
-
-    .directions-icon {
-      width: 14px;
-      height: 14px;
-      background-color: #3899EC;
-      mask: url("icons/marker-svgrepo-com.svg") no-repeat center;
-      -webkit-mask: url("icons/marker-svgrepo-com.svg") no-repeat center;
-      mask-size: contain;
-      -webkit-mask-size: contain;
-      display: inline-block;
-    }
+    .mapboxgl-ctrl-attrib{position:absolute;bottom:5px;right:6px}
+    #lp-toast{display:none;position:absolute;left:50%;bottom:110px;transform:translateX(-50%);z-index:30;background:rgba(30,30,30,.92);color:#fff;padding:10px 14px;border-radius:8px;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.28);white-space:nowrap}
+    #lp-toast.show{display:block}
   </style>
 </head>
 <body>
   <div id="map"></div>
-
+<button id="map-btn-fullscreen" class="fs-btn" title="Fullscreen"><svg id="fsIconExpand" viewBox="0 0 24 24" style="display:block"><polyline points="4,9 4,4 9,4"/><polyline points="20,9 20,4 15,4"/><polyline points="4,15 4,20 9,20"/><polyline points="20,15 20,20 15,20"/></svg><svg id="fsIconCollapse" viewBox="0 0 24 24" style="display:none"><polyline points="9,4 4,4 4,9"/><polyline points="15,4 20,4 20,9"/><polyline points="9,20 4,20 4,15"/><polyline points="15,20 20,20 20,15"/></svg></button>
+<button id="map-btn-locate" class="fs-btn" title="Show my location"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="display:block"><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="1" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line><line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line></svg></button>
+<button id="map-btn-layers" class="fs-btn" title="Switch basemap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"></polygon><polyline points="2 15.5 12 22 22 15.5"></polyline></svg></button>
+<button id="map-btn-reset" class="fs-btn" title="Reset view"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button>
+<div id="lp-toast"></div>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
   <script>
+/* ===== MAP BUTTONS: reset / layers / locate / fullscreen (matches The Ethels map) ===== */
+function lpInitControls(opts){
+  const map=opts.map;
+  const $=id=>document.getElementById(id);
+  const params=new URLSearchParams(location.search);
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent||"")||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const fsTab=params.get("fs")==="1";
+  if(fsTab) document.body.classList.add("fs-mode");
+
+  map.addControl(new mapboxgl.AttributionControl({compact:true}),"bottom-right");
+
+  function flash(b){ if(!b) return; b.style.background="rgba(56,153,236,0.55)"; setTimeout(()=>{ b.style.background=""; if(b.blur) b.blur(); },500); }
+  let toastTimer=null;
+  function toast(msg){ const t=$("lp-toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),3000); }
+
+  /* Reset */
+  $("map-btn-reset").addEventListener("click",e=>{ flash(e.currentTarget); opts.reset(); });
+
+  /* Layers */
+  let styleIdx=0;
+  $("map-btn-layers").addEventListener("click",e=>{
+    flash(e.currentTarget);
+    styleIdx=1-styleIdx;
+    map.once("style.load",()=>{
+      try{ if(opts.afterStyle) opts.afterStyle(); }catch(err){}
+      if(loc.on && loc.pt) drawLoc();
+    });
+    map.setStyle(opts.styles[styleIdx]);
+  });
+
+  /* Fullscreen */
+  const isFs=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  function updFsIcons(){
+    const on=!!isFs()||(fsTab&&ios);
+    $("fsIconExpand").style.display=on?"none":"block";
+    $("fsIconCollapse").style.display=on?"block":"none";
+  }
+  document.addEventListener("fullscreenchange",updFsIcons);
+  document.addEventListener("webkitfullscreenchange",updFsIcons);
+  updFsIcons();
+  $("map-btn-fullscreen").addEventListener("click",()=>{
+    if(fsTab&&ios){ window.close(); return; }
+    if(ios){ const u=new URL(location.href); u.searchParams.set("fs","1"); window.open(u.toString(),"_blank"); return; }
+    if(!isFs()){ const el=document.documentElement; (el.requestFullscreen||el.webkitRequestFullscreen).call(el); }
+    else{ (document.exitFullscreen||document.webkitExitFullscreen).call(document); }
+  });
+
+  /* Locate */
+  const loc={on:false,first:true,pt:null,acc:0,timer:null,bridgeTimer:null,useBridge:false};
+  const EMPTY={type:"FeatureCollection",features:[]};
+  const inFrame=(()=>{ try{ return window.self!==window.top; }catch(e){ return true; } })();
+  function circle(lng,lat,m){
+    const pts=[],dLat=m/110540,dLng=m/(111320*Math.cos(lat*Math.PI/180));
+    for(let i=0;i<=48;i++){ const a=i/48*2*Math.PI; pts.push([lng+dLng*Math.cos(a),lat+dLat*Math.sin(a)]); }
+    return {type:"Feature",geometry:{type:"Polygon",coordinates:[pts]}};
+  }
+  function ensureLocLayers(){
+    if(!map.getSource("lp-me")) map.addSource("lp-me",{type:"geojson",data:EMPTY});
+    if(!map.getSource("lp-acc")) map.addSource("lp-acc",{type:"geojson",data:EMPTY});
+    if(!map.getLayer("lp-acc-fill")) map.addLayer({id:"lp-acc-fill",type:"fill",source:"lp-acc",paint:{"fill-color":"#3899EC","fill-opacity":.15}});
+    if(!map.getLayer("lp-acc-line")) map.addLayer({id:"lp-acc-line",type:"line",source:"lp-acc",paint:{"line-color":"#3899EC","line-width":1.5,"line-opacity":.5}});
+    if(!map.getLayer("lp-me-dot")) map.addLayer({id:"lp-me-dot",type:"circle",source:"lp-me",paint:{"circle-radius":7,"circle-color":"#3899EC","circle-stroke-width":3,"circle-stroke-color":"#fff"}});
+  }
+  function drawLoc(){
+    ensureLocLayers();
+    map.getSource("lp-me").setData(loc.pt?{type:"Feature",geometry:{type:"Point",coordinates:loc.pt}}:EMPTY);
+    map.getSource("lp-acc").setData(loc.pt&&loc.acc>0?circle(loc.pt[0],loc.pt[1],loc.acc):EMPTY);
+  }
+  function gotLoc(lat,lng,acc){
+    if(!loc.on) return;
+    clearTimeout(loc.bridgeTimer);
+    loc.pt=[lng,lat]; loc.acc=acc||0; drawLoc();
+    if(loc.first){ loc.first=false; map.flyTo({center:loc.pt,zoom:Math.max(map.getZoom(),14),duration:1000}); }
+    clearTimeout(loc.timer); loc.timer=setTimeout(requestLoc,5000);
+  }
+  function locFail(msg){ stopLoc(); toast(msg||"Location unavailable"); }
+  function askBridge(){
+    loc.useBridge=true;
+    try{ (window.opener&&!window.opener.closed?window.opener:window.parent).postMessage({type:"requestLocation"},"*"); }catch(e){}
+    clearTimeout(loc.bridgeTimer);
+    loc.bridgeTimer=setTimeout(()=>locFail("Location unavailable"),8000);
+  }
+  function requestLoc(){
+    if(!loc.on) return;
+    if(loc.useBridge){ askBridge(); return; }
+    if(!navigator.geolocation){ inFrame?askBridge():locFail("Location not supported"); return; }
+    navigator.geolocation.getCurrentPosition(
+      p=>gotLoc(p.coords.latitude,p.coords.longitude,p.coords.accuracy),
+      err=>{ if(inFrame&&loc.first) askBridge(); else locFail(err&&err.message?err.message:"Location unavailable"); },
+      {enableHighAccuracy:true,timeout:7500,maximumAge:0}
+    );
+  }
+  function startLoc(){ loc.on=true; loc.first=true; $("map-btn-locate").style.background="rgba(56,153,236,0.55)"; requestLoc(); }
+  function stopLoc(){
+    loc.on=false; loc.pt=null; loc.useBridge=false;
+    clearTimeout(loc.timer); clearTimeout(loc.bridgeTimer);
+    if(map.getSource("lp-me")) drawLoc();
+    $("map-btn-locate").style.background="";
+  }
+  $("map-btn-locate").addEventListener("click",()=>{ loc.on?stopLoc():startLoc(); });
+  window.addEventListener("message",e=>{
+    const d=e.data; if(!d||!d.type||!loc.on) return;
+    if(d.type==="userLocation") gotLoc(d.lat,d.lng,d.accuracy);
+    else if(d.type==="locationError") locFail(d.message);
+  });
+}
+</script>
+  <script>
     mapboxgl.accessToken = "pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
+
+    const RED = "#EC2629", BLUE = "#3899EC";
+    const ZOOM = 15;
 
     const carParks = [
       { name: "Main Parking",  coords: [-4.118987606889656, 53.116855315868506] },
@@ -68,66 +189,62 @@
       { name: "Alternative 3", coords: [-4.1245835, 53.120581613493414] }
     ];
 
+    const MAP_STYLES = ["mapbox://styles/mapbox/satellite-streets-v12", "mapbox://styles/mapbox/outdoors-v12"];
+
     const map = new mapboxgl.Map({
       container: "map",
-      style: "mapbox://styles/mapbox/satellite-streets-v12",
+      style: MAP_STYLES[0],
       center: carParks[0].coords,
-      zoom: 15
+      zoom: ZOOM,
+      attributionControl: false
     });
 
-    map.addControl(new mapboxgl.FullscreenControl(), "top-right");
-    map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+    const dirIcon = `<svg class="icon icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s-8-5.5-8-11.5a8 8 0 0 1 16 0C20 16.5 12 22 12 22z"/><circle cx="12" cy="10.5" r="2.5"/></svg>`;
 
     function popupHtml(name, coords) {
       return `
-        <div style="font-size:13px;line-height:1.3">
-          <div style="margin-bottom:6px;font-weight:600">${name}</div>
-          <a target="_blank" rel="noopener"
-             href="https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}">
-            <span class="directions-icon"></span>
-            Directions
-          </a>
-        </div>
-      `;
+        <div class="park-card">
+          <div class="park-heading">${name}</div>
+          <div class="spec-row">${dirIcon}<a class="popup-link" target="_blank" rel="noopener"
+             href="https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}">Directions ↗</a></div>
+        </div>`;
     }
 
-    let openPopup = null;
+    const markerEls = [];
+    let openPopup = null, openIdx = -1;
 
-    carParks.forEach((p) => {
-      const popup = new mapboxgl.Popup({
-        offset: 16,
-        closeButton: false,
-        closeOnClick: false
-      }).setHTML(popupHtml(p.name, p.coords));
+    function setMarkerColor(i, color) {
+      const p = markerEls[i] && markerEls[i].querySelector("path");
+      if (p) p.setAttribute("fill", color);
+    }
 
-      const marker = new mapboxgl.Marker({
-        color: "#EC2629",
-        scale: 0.85
-      })
-        .setLngLat(p.coords)
-        .addTo(map);
+    function openCarPark(i, fly) {
+      const p = carParks[i];
+      if (openPopup) openPopup.remove();
+      if (openIdx >= 0) setMarkerColor(openIdx, RED);
+      openPopup = new mapboxgl.Popup({ offset: 22, closeButton: false, closeOnClick: false, anchor: "bottom" })
+        .setLngLat(p.coords).setHTML(popupHtml(p.name, p.coords)).addTo(map);
+      openIdx = i;
+      setMarkerColor(i, BLUE);
+      if (fly) map.flyTo({ center: p.coords, zoom: ZOOM, essential: true });
+    }
 
-      marker.getElement().addEventListener("click", () => {
-        if (openPopup) openPopup.remove();
-        popup.setLngLat(p.coords).addTo(map);
-        openPopup = popup;
-        map.flyTo({ center: p.coords, zoom: 15, essential: true });
-      });
+    carParks.forEach((p, i) => {
+      const el = document.createElement("div");
+      el.className = "marker";
+      el.innerHTML = `<svg width="27" height="41" viewBox="0 0 27 41" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 0C6.044 0 0 6.044 0 13.5c0 9.375 13.5 27.5 13.5 27.5S27 22.875 27 13.5C27 6.044 20.956 0 13.5 0z" fill="${RED}"/><circle cx="13.5" cy="13.5" r="5" fill="white" opacity="0.9"/></svg>`;
+      markerEls[i] = el;
+      new mapboxgl.Marker({ element: el }).setLngLat(p.coords).addTo(map);
+      el.addEventListener("click", (e) => { e.stopPropagation(); openCarPark(i, true); });
     });
 
-    map.on("load", () => {
-      const first = carParks[0];
-      const firstPopup = new mapboxgl.Popup({
-        offset: 16,
-        closeButton: false,
-        closeOnClick: false
-      }).setHTML(popupHtml(first.name, first.coords))
-        .setLngLat(first.coords)
-        .addTo(map);
-
-      openPopup = firstPopup;
-      map.flyTo({ center: first.coords, zoom: 15, essential: true });
+    lpInitControls({
+      map,
+      styles: MAP_STYLES,
+      reset: () => openCarPark(0, true)
     });
+
+    map.on("load", () => openCarPark(0, true));
   </script>
 </body>
 </html>
