@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
 
@@ -22,36 +22,28 @@
 
     #map { position: absolute; inset: 0; }
 
+    /* pop-up: matches the site's cards (white, soft shadow, red pill button) */
     .mapboxgl-popup-content {
-      padding: 15px 15px 10px 15px;
-      border-radius: 20px;
+      padding: 12px 14px 13px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 10px 28px -6px rgba(0,0,0,.35);
+      font-family: Figtree, Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      text-align: center;
+      min-width: 128px;
     }
-
     .mapboxgl-popup-tip { display: none; }
-
-    .mapboxgl-popup-content a {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #3899EC;
-      text-decoration: none;
-      outline: none !important;
-      box-shadow: none !important;
-      border: none !important;
+    .pp-k { display: block; margin-bottom: 3px; font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #ed2629; }
+    .pp-t { display: block; margin-bottom: 10px; font-size: 15px; font-weight: 700; letter-spacing: -.2px; color: #1d1d1f; white-space: nowrap; }
+    .mapboxgl-popup-content a.pp-b {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      height: 30px; padding: 0 14px; border-radius: 999px;
+      background: #ed2629; color: #fff; font-size: 12px; font-weight: 600; text-decoration: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px -14px rgba(0,0,0,.18);
+      outline: none; border: 0;
     }
-
-    .directions-icon {
-      width: 14px;
-      height: 14px;
-      background-color: #3899EC;
-      mask: url("icons/marker-svgrepo-com.svg") no-repeat center;
-      -webkit-mask: url("icons/marker-svgrepo-com.svg") no-repeat center;
-      mask-size: contain;
-      -webkit-mask-size: contain;
-      display: inline-block;
-    }
+    .mapboxgl-popup-content a.pp-b:hover { background: #d41f22; }
+    .pp-b svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 <style>
 /* ===== Button styling matched to The Ethels map (styling only) ===== */
@@ -98,16 +90,12 @@
     map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
 
     function popupHtml(name, coords) {
-      return `
-        <div style="font-size:13px;line-height:1.3">
-          <div style="margin-bottom:6px;font-weight:600">${name}</div>
-          <a target="_blank" rel="noopener"
-             href="https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}">
-            <span class="directions-icon"></span>
-            Directions
-          </a>
-        </div>
-      `;
+      const main = /^main/i.test(name);
+      const label = main ? "Start &amp; Finish" : "Alternative parking";
+      const title = main ? "Main Parking" : name.replace(/^Alternative\s*/i, "Parking ");
+      return `<span class="pp-k">${label}</span><span class="pp-t">${title}</span>`
+        + `<a class="pp-b" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}">`
+        + `<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Directions</a>`;
     }
 
     let openPopup = null;
