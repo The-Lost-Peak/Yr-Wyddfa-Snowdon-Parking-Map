@@ -81,6 +81,7 @@
 
     const map = new mapboxgl.Map({
       container: "map",
+      cooperativeGestures: matchMedia("(pointer:coarse)").matches,   // phones: one finger scrolls the page, two move the map
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: carParks[0].coords,
       zoom: 15
