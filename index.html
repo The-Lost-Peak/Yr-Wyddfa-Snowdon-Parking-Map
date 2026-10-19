@@ -44,7 +44,15 @@
     }
     .mapboxgl-popup-content a.pp-b:hover { background: #d41f22; }
     .pp-b svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  </style>
+  /* lp-icons-v1: same line icons as the Ethels map */
+.mapboxgl-ctrl button.mapboxgl-ctrl-zoom-in .mapboxgl-ctrl-icon{background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E")!important;background-size:22px 22px!important;background-position:center!important;background-repeat:no-repeat!important;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))!important}
+.mapboxgl-ctrl button.mapboxgl-ctrl-zoom-out .mapboxgl-ctrl-icon{background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E")!important;background-size:22px 22px!important;background-position:center!important;background-repeat:no-repeat!important;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))!important}
+.mapboxgl-ctrl button.mapboxgl-ctrl-fullscreen .mapboxgl-ctrl-icon{background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4,9 4,4 9,4'/%3E%3Cpolyline points='20,9 20,4 15,4'/%3E%3Cpolyline points='4,15 4,20 9,20'/%3E%3Cpolyline points='20,15 20,20 15,20'/%3E%3C/svg%3E")!important;background-size:22px 22px!important;background-position:center!important;background-repeat:no-repeat!important;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))!important}
+.mapboxgl-ctrl button.mapboxgl-ctrl-shrink .mapboxgl-ctrl-icon{background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,4 9,9 4,9'/%3E%3Cpolyline points='15,4 15,9 20,9'/%3E%3Cpolyline points='9,20 9,15 4,15'/%3E%3Cpolyline points='15,20 15,15 20,15'/%3E%3C/svg%3E")!important;background-size:22px 22px!important;background-position:center!important;background-repeat:no-repeat!important;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))!important}
+.mapboxgl-ctrl button.mapboxgl-ctrl-compass .mapboxgl-ctrl-icon{background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l5 16-5-3.5L7 19z'/%3E%3C/svg%3E")!important;background-size:22px 22px!important;background-position:center!important;background-repeat:no-repeat!important;filter:drop-shadow(0 1px 1px rgba(255,255,255,.6))!important}
+@media (max-width:600px){.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon{background-size:16px 16px!important}}
+.mapboxgl-ctrl-group button:hover{background-color:rgba(255,255,255,.45)!important}
+</style>
 <style>
 /* ===== Button styling matched to The Ethels map (styling only) ===== */
 .mapboxgl-ctrl-group:not(:empty){background:transparent!important;box-shadow:none!important;border-radius:0!important;display:flex;flex-direction:column;gap:10px}
@@ -84,8 +92,10 @@
       cooperativeGestures: matchMedia("(pointer:coarse)").matches,   // phones: one finger scrolls the page, two move the map
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: carParks[0].coords,
-      zoom: 15
+      zoom: 15,
+      attributionControl: false
     });
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");   // credits behind an (i), like the other maps
 
     map.addControl(new mapboxgl.FullscreenControl(), "top-right");
     map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
