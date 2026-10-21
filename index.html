@@ -112,7 +112,7 @@
     let openPopup = null;
 
     carParks.forEach((p) => {
-      const popup = new mapboxgl.Popup({
+      const popup = new mapboxgl.Popup({ focusAfterOpen: false, 
         offset: 16,
         closeButton: false,
         closeOnClick: false
@@ -135,7 +135,7 @@
 
     map.on("load", () => {
       const first = carParks[0];
-      const firstPopup = new mapboxgl.Popup({
+      const firstPopup = new mapboxgl.Popup({ focusAfterOpen: false, 
         offset: 16,
         closeButton: false,
         closeOnClick: false
